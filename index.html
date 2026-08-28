@@ -233,7 +233,7 @@ function init(){
   // Post-processing (bloom for neon glow)
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.85, 0.15);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.75, 0.85, 0.2);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -308,7 +308,7 @@ function neonSignTexture({w=512,h=512,bg='#050505',text='',sub='',fg='#ffffff',a
     ctx.arc(w/2,h/2,r,0,Math.PI*2);
     ctx.fillStyle = accent;
     ctx.shadowColor = accent;
-    ctx.shadowBlur = 60;
+    ctx.shadowBlur = 35;
     ctx.fill();
     ctx.restore();
     ctx.fillStyle = '#ffffff';
@@ -329,7 +329,7 @@ function neonSignTexture({w=512,h=512,bg='#050505',text='',sub='',fg='#ffffff',a
     grad.addColorStop(0,'#bfe9ff');
     grad.addColorStop(1,'#1b3550');
     ctx.fillStyle = grad;
-    ctx.shadowColor = accent; ctx.shadowBlur = 40;
+    ctx.shadowColor = accent; ctx.shadowBlur = 20;
     ctx.fill();
     ctx.shadowBlur = 0;
     ctx.fillStyle='#ffffff';
@@ -352,7 +352,7 @@ function neonSignTexture({w=512,h=512,bg='#050505',text='',sub='',fg='#ffffff',a
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.font = `900 ${fontSize}px 'Segoe UI', sans-serif`;
-    ctx.shadowColor = fg; ctx.shadowBlur = 22;
+    ctx.shadowColor = fg; ctx.shadowBlur = 10;
     wrapText(ctx, text, w/2, sub? h*0.42 : h/2, w*0.86, fontSize*1.05);
     if(sub){
       ctx.font = `700 ${fontSize*0.32}px 'Segoe UI', sans-serif`;
@@ -439,7 +439,7 @@ function addPanel(group, {x,y,z,ry,w,h,tex,glow}){
   // soft glow halo behind the panel so it reads brightly even from afar
   if(glow){
     const haloMat = new THREE.MeshBasicMaterial({
-      map: glowTexture(glow), transparent:true, opacity:0.4,
+      map: glowTexture(glow), transparent:true, opacity:0.3,
       blending: THREE.AdditiveBlending, depthWrite:false, toneMapped:false
     });
     const halo = new THREE.Mesh(new THREE.PlaneGeometry(W*2,H*2), haloMat);
@@ -464,7 +464,9 @@ function buildCentralTower(){
   const height = 64, width = 17, depth = 13;
   const cz = -46;
 
-  const towerMat = new THREE.MeshStandardMaterial({ color:0x0b1119, roughness:0.82, metalness:0.18 });
+  const towerWinTex = windowTexture(12, Math.floor(height*1.6), '#0a0f16', '#ffe6b8', 0.32);
+  towerWinTex.repeat.set(3, Math.round(height/9));
+  const towerMat = new THREE.MeshStandardMaterial({ color:0x11161f, map: towerWinTex, roughness:0.82, metalness:0.18 });
   const tower = new THREE.Mesh(new THREE.BoxGeometry(width,height,depth), towerMat);
   tower.position.set(0, height/2, cz);
   tower.castShadow = true;
@@ -585,7 +587,7 @@ function buildStreetProps(){
       bulb.position.set(side*10.4 - side*1.6, 5.2, z);
       scene.add(bulb);
 
-      const lamp = new THREE.PointLight(0xffb877, 6, 11, 2);
+      const lamp = new THREE.PointLight(0xffb877, 13, 20, 2);
       lamp.position.copy(bulb.position);
       scene.add(lamp);
     }
@@ -595,6 +597,33 @@ function buildStreetProps(){
 function buildBuildingCanyon(){
   const facadeColors = [0x0c1420,0x0e1522,0x0a121c,0x101826,0x0b131e];
   const litColors = ['#ffd98a','#8ad9ff','#ffe9c4'];
+
+  // extra fictional-brand ad panels scattered across the canyon buildings
+  const adPalette = [
+    {text:'NEBULA', sub:'PHONES · 5G',      bg:'#1a063d', accent:'#b388ff'},
+    {text:'ECHO',   sub:'AUDIO GEAR',       bg:'#052b2b', accent:'#33ffe0'},
+    {text:'RIFT',   sub:'STREAMING',        bg:'#3d0a1a', accent:'#ff3d7a'},
+    {text:'ORCA',   sub:'BANK',             bg:'#04182b', accent:'#4dc3ff'},
+    {text:'VOLT',   sub:'ENERGY DRINK',     bg:'#2b1a03', accent:'#ffb84d'},
+    {text:'LUMEN',  sub:'SKIN CARE',        bg:'#2b0522', accent:'#ff7ad9'},
+    {text:'HAZE',   sub:'SNEAKERS',         bg:'#0a2b12', accent:'#7dffb0'},
+    {text:'PULSE',  sub:'FITNESS APP',      bg:'#241305', accent:'#ffd24d'},
+    {text:'DRIFT',  sub:'RIDE SHARE',       bg:'#0a1a2b', accent:'#4de0ff'},
+    {text:'ZEN',    sub:'NOODLE BAR',       bg:'#1f0a04', accent:'#ff8a4d'},
+    {text:'GRID',   sub:'ELECTRIC MOTORS',  bg:'#031a12', accent:'#4dffb0'},
+    {text:'IRIS',   sub:'EYEWEAR',          bg:'#0d0d2b', accent:'#8ab0ff'},
+    {text:'KESTREL',sub:'AIRLINES',         bg:'#031225', accent:'#5ec9ff'},
+    {text:'NOVAK',  sub:'WATCHES',          bg:'#150a02', accent:'#ffcf7a'},
+    {text:'GLIMMER',sub:'JEWELRY',          bg:'#2b0a1f', accent:'#ff9ad4'},
+    {text:'CIRCUIT',sub:'ARCADE',           bg:'#080826', accent:'#7a5eff'},
+    {text:'TIDE',   sub:'LAUNDRY',          bg:'#02202b', accent:'#5ee0ff'},
+    {text:'ONYX',   sub:'NIGHTCLUB',        bg:'#150215', accent:'#e34dff'},
+    {text:'FERAL',  sub:'PET FOOD',         bg:'#122b04', accent:'#a6ff4d'},
+    {text:'STRATA', sub:'REAL ESTATE',      bg:'#0a141f', accent:'#8fc8ff'},
+  ];
+  // z-zones already covered by hand-placed billboards elsewhere; skip near these
+  const reservedZ = [-46, 2, 6, 9, 12, 20, 24];
+  const farFromReserved = z => reservedZ.every(rz => Math.abs(rz - z) > 6);
 
   for(let side of [-1,1]){
     let z = -55;
@@ -627,6 +656,36 @@ function buildBuildingCanyon(){
       scene.add(bld);
 
       (side === -1 ? leftBuildings : rightBuildings).push({ x: bld.position.x, z, width, depth, height });
+
+      // glue random ad panel(s) to this building's street-facing wall
+      if(farFromReserved(z) && Math.random() < 0.85 && height > 14){
+        const faceX = bld.position.x + side*(width/2 + 0.06);
+        const ry = side===-1 ? Math.PI/2 : -Math.PI/2;
+        const pw = Math.min(width, depth) * 0.72;
+
+        // lower panel — almost every eligible building gets at least this one
+        const spec1 = adPalette[Math.floor(Math.random()*adPalette.length)];
+        const ph1 = pw * (0.75 + Math.random()*0.4);
+        const py1 = height * (0.28 + Math.random()*0.18);
+        addPanel(scene, {
+          x:faceX, y:py1, z, ry, w:pw, h:ph1, glow:spec1.accent,
+          tex: neonSignTexture({ text:spec1.text, sub:spec1.sub, bg:spec1.bg, accent:spec1.accent, fontSize:120 })
+        });
+
+        // second, higher panel on taller buildings for a denser skyline of ads
+        if(height > 26 && Math.random() < 0.7){
+          let spec2 = adPalette[Math.floor(Math.random()*adPalette.length)];
+          while(spec2.text === spec1.text){
+            spec2 = adPalette[Math.floor(Math.random()*adPalette.length)];
+          }
+          const ph2 = pw * (0.75 + Math.random()*0.4);
+          const py2 = height * (0.62 + Math.random()*0.2);
+          addPanel(scene, {
+            x:faceX, y:py2, z, ry, w:pw, h:ph2, glow:spec2.accent,
+            tex: neonSignTexture({ text:spec2.text, sub:spec2.sub, bg:spec2.bg, accent:spec2.accent, fontSize:120 })
+          });
+        }
+      }
 
       z += depth + 1.5 + Math.random()*3;
       idx++;
@@ -675,11 +734,6 @@ function buildBillboards(){
 
   const lx9 = wallX(leftBuildings, 9, 1);
   addPanel(bbGroupLeft, { x:lx9, y:16, z:9, ry:Math.PI/2, w:4.6, h:5.2, glow:'#5cff8f',
-    tex:neonSignTexture({text:'SPUD', sub:'RUSH · LATER', bg:'#0c3d1f', accent:'#5cff8f', fontSize:130}) });
-
-  // twin SPUD sign on the opposite (right) wall, same block
-  const rx9 = wallX(rightBuildings, 9, -1);
-  addPanel(bbGroupRight, { x:rx9, y:16, z:9, ry:-Math.PI/2, w:4.6, h:5.2, glow:'#5cff8f',
     tex:neonSignTexture({text:'SPUD', sub:'RUSH · LATER', bg:'#0c3d1f', accent:'#5cff8f', fontSize:130}) });
 
   addPanel(bbGroupLeft, { x:lx6, y:10.5, z:6, ry:Math.PI/2, w:6, h:5.6, glow:'#ff4d4d',
