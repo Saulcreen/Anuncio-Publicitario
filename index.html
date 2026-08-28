@@ -187,7 +187,7 @@ function init(){
   scene.fog = new THREE.FogExp2(0x18324f, 0.009);
 
   camera = new THREE.PerspectiveCamera(52, window.innerWidth/window.innerHeight, 0.1, 400);
-  camera.position.set(14, 13, 38);
+  camera.position.set(0, 15, 30);
 
   renderer = new THREE.WebGLRenderer({ antialias:true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -206,7 +206,7 @@ function init(){
   controls.minDistance = 8;
   controls.maxDistance = 160;
   controls.maxPolarAngle = Math.PI/2 - 0.02;
-  controls.target.set(0, 14, -30);
+  controls.target.set(0, 15, -40);
   controls.autoRotate = false;
   controls.autoRotateSpeed = 0.55;
   controls.addEventListener('start', ()=>{ /* keep autorotate flag independent */ });
@@ -685,19 +685,10 @@ function buildBillboards(){
   addPanel(bbGroupLeft, { x:lx6, y:10.5, z:6, ry:Math.PI/2, w:6, h:5.6, glow:'#ff4d4d',
     tex:neonSignTexture({text:'KOI', sub:'COLA', bg:'#7a0f12', accent:'#ff4d4d', fontSize:170}) });
 
-  // vertical hotel sign
-  const lxm4 = wallX(leftBuildings, -4, 1);
-  addPanel(bbGroupLeft, { x:lxm4, y:23, z:-4, ry:Math.PI/2, w:2.2, h:13,
-    tex:verticalSignTexture('ORBIT HOTEL', '#07141c', '#20e8ff') });
-
   // RIGHT stack, glued to the right canyon wall
   const rx2 = wallX(rightBuildings, 2, -1);
   addPanel(bbGroupRight, { x:rx2, y:30, z:2, ry:-Math.PI/2, w:9, h:9, glow:'#ff2d7a',
     tex:neonSignTexture({shape:'circle', text:'ZX', accent:'#ff2d7a', fontSize:230}) });
-
-  const rxm9 = wallX(rightBuildings, -9, -1);
-  addPanel(bbGroupRight, { x:rxm9, y:30, z:-9, ry:-Math.PI/2, w:6.6, h:2.4, glow:'#20e8ff',
-    tex:neonSignTexture({text:'ZENIX', bg:'#050505', accent:'#20e8ff', fontSize:100}) });
 
   const rx12 = wallX(rightBuildings, 12, -1);
   addPanel(bbGroupRight, { x:rx12, y:14, z:12, ry:-Math.PI/2, w:8, h:11, glow:'#4de0ff',
