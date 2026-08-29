@@ -115,6 +115,7 @@ function init(){
   const storyOverlay = document.getElementById('story-overlay');
   let introDone = false;
   let storyVisible = false;
+  let cinematicTriggered = false;
 
   function startExperience(){
     if(introDone) return;
@@ -180,12 +181,17 @@ function init(){
         return;
       }
 
+      if (cinematicTriggered) {
+        return;
+      }
+
       if (!storyVisible) {
         toggleStoryOverlay(true);
         return;
       }
 
       toggleStoryOverlay(false);
+      cinematicTriggered = true;
       startCameraCinematicToPanel(73, 2.6);
     }
   });
