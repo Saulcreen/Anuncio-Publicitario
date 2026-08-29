@@ -100,6 +100,16 @@ function init(){
 
   window.addEventListener('resize', onResize);
 
+  const updateFullscreenCursor = () => {
+    const active = !!document.fullscreenElement || !!document.webkitFullscreenElement;
+    document.body.classList.toggle('fullscreen-active', active);
+    document.documentElement.classList.toggle('fullscreen-active', active);
+  };
+
+  document.addEventListener('fullscreenchange', updateFullscreenCursor);
+  document.addEventListener('webkitfullscreenchange', updateFullscreenCursor);
+  updateFullscreenCursor();
+
   const introScreen = document.getElementById('intro-screen');
   let introDone = false;
 
