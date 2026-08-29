@@ -18,6 +18,7 @@ let neonMaterials = [];
 let cars = [];
 let peds = [];
 let autoRotate = false;
+let cameraCinematic = null;
 const BB_SCALE = 1.28; // makes every billboard more prominent
 const ADS_AS_COLOR_BLOCKS = true; // render every billboard as a plain colored rectangle, no text
 let leftBuildings = [], rightBuildings = []; // real building geometry, for gluing signs to walls
@@ -111,12 +112,44 @@ function init(){
   updateFullscreenCursor();
 
   const introScreen = document.getElementById('intro-screen');
+  const storyOverlay = document.getElementById('story-overlay');
   let introDone = false;
+  let storyVisible = false;
 
   function startExperience(){
     if(introDone) return;
     introDone = true;
     introScreen.classList.add('hidden');
+  }
+
+  function toggleStoryOverlay(forceState){
+    if (typeof forceState === 'boolean') {
+      storyVisible = forceState;
+    } else {
+      storyVisible = !storyVisible;
+    }
+    storyOverlay.classList.toggle('visible', storyVisible);
+  }
+
+  function startCameraCinematicToPanel(panelId, duration = 2.4){
+    const entry = resolvePanelEntry(panelId);
+    if (!entry || !entry.mesh) return;
+
+    const startPos = camera.position.clone();
+    const startTarget = controls.target.clone();
+    const endTarget = entry.mesh.getWorldPosition(new THREE.Vector3());
+    const endPos = endTarget.clone().add(new THREE.Vector3(0, 7, 18));
+
+    cameraCinematic = {
+      startPos,
+      startTarget,
+      endPos,
+      endTarget,
+      duration,
+      elapsed: 0,
+    };
+
+    controls.enabled = false;
   }
 
   const toggleFullscreen = () => {
@@ -133,6 +166,8 @@ function init(){
   };
 
   window.addEventListener('keydown', (event) => {
+    if (event.repeat) return;
+
     if (event.code === 'KeyF' || event.key === 'f' || event.key === 'F') {
       event.preventDefault();
       toggleFullscreen();
@@ -140,11 +175,26 @@ function init(){
     }
 
     if(event.code === 'Space' || event.key === 'ArrowRight' || event.key === 'Right'){
-      startExperience();
+      if (!introDone) {
+        startExperience();
+        return;
+      }
+
+      if (!storyVisible) {
+        toggleStoryOverlay(true);
+        return;
+      }
+
+      toggleStoryOverlay(false);
+      startCameraCinematicToPanel(73, 2.6);
     }
   });
 
-  renderer.domElement.addEventListener('click', startExperience);
+  renderer.domElement.addEventListener('click', () => {
+    if (!introDone) {
+      startExperience();
+    }
+  });
 }
 
 function onResize(){
@@ -1079,6 +1129,20 @@ function updatePedestrians(dt){
 function animate(){
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
+
+  if (cameraCinematic) {
+    cameraCinematic.elapsed += dt;
+    const p = Math.min(cameraCinematic.elapsed / cameraCinematic.duration, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+
+    camera.position.lerpVectors(cameraCinematic.startPos, cameraCinematic.endPos, eased);
+    controls.target.lerpVectors(cameraCinematic.startTarget, cameraCinematic.endTarget, eased);
+
+    if (p >= 1) {
+      cameraCinematic = null;
+      controls.enabled = true;
+    }
+  }
 
   updateRain(dt);
   updateTraffic(dt);
