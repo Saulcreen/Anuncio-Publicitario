@@ -625,33 +625,11 @@ window.setPanelImageContain = function(id, url){
   }
   _panelTexLoader.load(url, (imgTex)=>{
     imgTex.colorSpace = THREE.SRGBColorSpace;
-    const mesh = entry.mesh;
-    let pw = 1, ph = 1;
-    if(mesh.geometry && mesh.geometry.parameters && mesh.geometry.parameters.width && mesh.geometry.parameters.height){
-      pw = mesh.geometry.parameters.width;
-      ph = mesh.geometry.parameters.height;
-    } else {
-      pw = mesh.scale.x || 1;
-      ph = mesh.scale.y || 1;
-    }
-
-    const panelAspect = pw / ph;
-    const imgW = (imgTex.image && imgTex.image.width) || 1;
-    const imgH = (imgTex.image && imgTex.image.height) || 1;
-    const imgAspect = imgW / imgH;
-
-    // Contain mode: keep the full image visible without cropping.
     imgTex.wrapS = THREE.ClampToEdgeWrapping;
     imgTex.wrapT = THREE.ClampToEdgeWrapping;
-    if(imgAspect > panelAspect){
-      const rx = panelAspect / imgAspect;
-      imgTex.repeat.set(rx, 1);
-      imgTex.offset.set((1 - rx) / 2, 0);
-    } else {
-      const ry = imgAspect / panelAspect;
-      imgTex.repeat.set(1, ry);
-      imgTex.offset.set(0, (1 - ry) / 2);
-    }
+    imgTex.repeat.set(1, 1);
+    imgTex.offset.set(0, 0);
+    imgTex.center.set(0, 0);
 
     entry.mesh.material.map = imgTex;
     entry.mesh.material.needsUpdate = true;
@@ -682,6 +660,7 @@ window.clearAllPanelImages = function(){
 
 // Remove images from all panels, then apply the requested images to the relevant panels.
 window.clearAllPanelImages();
+window.setPanelImage(19, "https://cdn.phototourl.com/free/2026-08-29-c3d85fcb-d36e-4790-96b9-8c9ca14b63b7.png");
 window.setPanelImageFit(28, "https://cdn.phototourl.com/free/2026-08-28-60444415-479e-446e-a912-a73b2bdbbc53.png");
 window.setPanelImage(41, "https://cdn.phototourl.com/free/2026-08-29-bb369b8e-316e-49d4-9211-44ea5f3c36ea.png");
 window.setPanelImageFit(52, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI4xZ9kDUu4phler2R-EHHyBiZ2DAHvoI4D1OKziQPbkroHnnlLhtrL86L&s=10");
