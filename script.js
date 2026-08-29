@@ -40,18 +40,46 @@ function syncStoryFlow(){
 
 function setStoryOverlayImage(url){
   if (!storyImage) return;
-  storyImage.src = url;
+
+  const nextUrl = url || defaultStorySrc;
+  storyImage.style.transition = 'opacity 0.12s ease';
+  storyImage.style.opacity = '0';
+  storyImage.style.visibility = 'hidden';
+  storyOverlay.classList.remove('visible');
+
+  const applyImage = () => {
+    storyImage.src = nextUrl;
+    const reveal = () => {
+      requestAnimationFrame(() => {
+        storyImage.style.visibility = 'visible';
+        storyImage.style.opacity = '1';
+        storyOverlay.classList.add('visible');
+      });
+    };
+
+    if (storyImage.complete && storyImage.naturalWidth > 0) {
+      reveal();
+      return;
+    }
+
+    storyImage.onload = reveal;
+  };
+
+  requestAnimationFrame(applyImage);
 }
 
 function showStoryOverlay(url = defaultStorySrc){
-  setStoryOverlayImage(url);
   storyFlow.storyVisible = true;
-  storyOverlay.classList.add('visible');
+  setStoryOverlayImage(url);
   syncStoryFlow();
 }
 
 function hideStoryOverlay(){
   storyFlow.storyVisible = false;
+  if (!storyImage) return;
+  storyImage.style.transition = 'opacity 0.12s ease';
+  storyImage.style.opacity = '0';
+  storyImage.style.visibility = 'hidden';
   storyOverlay.classList.remove('visible');
   syncStoryFlow();
 }
@@ -81,7 +109,39 @@ function startCameraCinematicToPanel(panelId, duration = 2.4){
   const startPos = camera.position.clone();
   const startTarget = controls.target.clone();
   const endTarget = entry.mesh.getWorldPosition(new THREE.Vector3());
-  const endPos = endTarget.clone().add(new THREE.Vector3(0, 7, 18));
+
+  const faceNormal = new THREE.Vector3(0, 0, 1)
+    .applyQuaternion(entry.mesh.getWorldQuaternion(new THREE.Quaternion()))
+    .normalize();
+
+  // Scale the viewing distance to this panel's own size, so bigger
+  // billboards don't end up too zoomed-in (or smaller ones too far away).
+  const geoParams = entry.mesh.geometry && entry.mesh.geometry.parameters;
+  const panelSize = geoParams ? Math.max(geoParams.width, geoParams.height) : 6;
+  let viewDistance = Math.max(9, panelSize * 1.1 + 2);
+
+  // Panels 73 and 19 get a closer, more zoomed-in shot than the rest;
+  // panel 19 a bit closer still than panel 73.
+  const idNum = (typeof panelId === 'string') ? parseInt(panelId, 10) : panelId;
+  if (idNum === 19) {
+    viewDistance = Math.max(controls.minDistance + 0.5, viewDistance * 0.55);
+  } else if (idNum === 73) {
+    viewDistance = Math.max(controls.minDistance + 0.5, viewDistance * 0.65);
+  }
+
+  const normalOffset = faceNormal.clone().multiplyScalar(viewDistance);
+  const endPos = endTarget.clone()
+    .add(normalOffset)
+    .add(new THREE.Vector3(0, 0.6, 0));
+
+  // Force a strictly frontal, eye-level view so the billboard is seen head-on.
+  const lookAt = endTarget.clone();
+  const viewDirection = new THREE.Vector3().subVectors(lookAt, endPos).normalize();
+  const desiredUp = new THREE.Vector3(0, 1, 0);
+  const frontalQuat = new THREE.Quaternion().setFromRotationMatrix(
+    new THREE.Matrix4().lookAt(endPos, lookAt, desiredUp)
+  );
+  camera.quaternion.copy(frontalQuat);
 
   cameraCinematic = {
     startPos,
@@ -235,7 +295,76 @@ function init(){
         return;
       }
 
-      if (storyFlow.finalImageShown || cameraCinematic) {
+      if (cameraCinematic) {
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-41-cinematic') {
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-41-done') {
+        startCameraReturnToOrigin(3.2);
+        storyFlow.phase = 'panel-41-return';
+        storyFlow.cinematicCompleted = false;
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-28-cinematic') {
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-28-done') {
+        startCameraReturnToOrigin(3.2);
+        storyFlow.phase = 'panel-28-return';
+        storyFlow.cinematicCompleted = false;
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-41-epilogue') {
+        hideStoryOverlay();
+        storyFlow.cinematicCompleted = false;
+        storyFlow.phase = 'panel-28-cinematic';
+        startCameraCinematicToPanel(28, 3.8);
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-19-cinematic') {
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-19-done') {
+        startCameraReturnToOrigin(3.2);
+        storyFlow.phase = 'panel-19-return';
+        storyFlow.cinematicCompleted = false;
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-28-epilogue') {
+        hideStoryOverlay();
+        storyFlow.cinematicCompleted = false;
+        storyFlow.phase = 'panel-19-cinematic';
+        startCameraCinematicToPanel(19, 3.8);
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.phase === 'final-image') {
+        hideStoryOverlay();
+        storyFlow.finalImageShown = false;
+        storyFlow.storyVisible = false;
+        storyFlow.cinematicCompleted = false;
+        storyFlow.phase = 'panel-41-cinematic';
+        startCameraCinematicToPanel(41, 3.8);
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.finalImageShown && storyFlow.phase !== 'final-image') {
         return;
       }
 
@@ -250,13 +379,13 @@ function init(){
         hideStoryOverlay();
         storyFlow.phase = 'panel-cinematic';
         storyFlow.cinematicCompleted = false;
-        startCameraCinematicToPanel(73, 2.6);
+        startCameraCinematicToPanel(73, 3.8);
         syncStoryFlow();
         return;
       }
 
       if (storyFlow.phase === 'panel-cinematic' && storyFlow.cinematicCompleted) {
-        startCameraReturnToOrigin(2.2);
+        startCameraReturnToOrigin(3.2);
         storyFlow.phase = 'return-cinematic';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -1213,17 +1342,48 @@ function animate(){
     controls.target.lerpVectors(cameraCinematic.startTarget, cameraCinematic.endTarget, eased);
 
     if (p >= 1) {
-      if (cameraCinematic.mode === 'panel') {
+      const finishedMode = cameraCinematic.mode;
+      // Clear the finished cinematic BEFORE running the transition logic below,
+      // so that if that logic starts a brand-new cinematic (chaining straight
+      // into the next panel), it doesn't get wiped out afterward.
+      cameraCinematic = null;
+
+      if (finishedMode === 'panel') {
         storyFlow.cinematicCompleted = true;
-        storyFlow.phase = 'panel-cinematic';
-      } else if (cameraCinematic.mode === 'return') {
-        storyFlow.finalImageShown = true;
-        storyFlow.phase = 'final-image';
-        showStoryOverlay(finalStoryUrl);
+        if (storyFlow.phase === 'panel-41-cinematic') {
+          storyFlow.phase = 'panel-41-done';
+        } else if (storyFlow.phase === 'panel-28-cinematic') {
+          storyFlow.phase = 'panel-28-done';
+        } else if (storyFlow.phase === 'panel-19-cinematic') {
+          storyFlow.phase = 'panel-19-done';
+        } else if (storyFlow.phase === 'final-image') {
+          storyFlow.phase = 'panel-41-cinematic';
+        } else {
+          storyFlow.phase = 'panel-cinematic';
+        }
+      } else if (finishedMode === 'return') {
+        if (storyFlow.phase === 'panel-41-return') {
+          // Show the "arriving back" image first — the panel 28 cinematic
+          // only starts once the user presses Space again on this image.
+          storyFlow.phase = 'panel-41-epilogue';
+          showStoryOverlay('https://cdn.phototourl.com/member/2026-08-29-79f8de58-ebee-42aa-ba13-407e39ab6e53.png');
+        } else if (storyFlow.phase === 'panel-28-return') {
+          // Same pattern: show this image first, the panel 19 cinematic
+          // waits for the next Space press.
+          storyFlow.phase = 'panel-28-epilogue';
+          showStoryOverlay('https://cdn.phototourl.com/member/2026-08-29-4e2acc6f-d008-4dc9-8b22-e30aad3421ad.png');
+        } else if (storyFlow.phase === 'panel-19-return') {
+          storyFlow.phase = 'panel-19-done';
+        } else {
+          storyFlow.finalImageShown = true;
+          storyFlow.phase = 'final-image';
+          showStoryOverlay(finalStoryUrl);
+        }
       }
 
-      cameraCinematic = null;
-      controls.enabled = true;
+      if (!cameraCinematic) {
+        controls.enabled = true;
+      }
       syncStoryFlow();
     }
   }
