@@ -19,11 +19,99 @@ let cars = [];
 let peds = [];
 let autoRotate = false;
 let cameraCinematic = null;
+const storyFlow = {
+  introDone: false,
+  storyVisible: false,
+  cinematicCompleted: false,
+  finalImageShown: false,
+  phase: 'intro'
+};
+window.storyFlow = storyFlow;
 const BB_SCALE = 1.28; // makes every billboard more prominent
 const ADS_AS_COLOR_BLOCKS = true; // render every billboard as a plain colored rectangle, no text
 let leftBuildings = [], rightBuildings = []; // real building geometry, for gluing signs to walls
 let adPanels = []; // registry: {id, mesh} for every billboard, so images can be targeted by ID
 let panelCounter = 0;
+let introScreen, storyOverlay, storyImage, defaultStorySrc, finalStoryUrl, initialCameraPos, initialCameraTarget;
+
+function syncStoryFlow(){
+  window.storyFlow = storyFlow;
+}
+
+function setStoryOverlayImage(url){
+  if (!storyImage) return;
+  storyImage.src = url;
+}
+
+function showStoryOverlay(url = defaultStorySrc){
+  setStoryOverlayImage(url);
+  storyFlow.storyVisible = true;
+  storyOverlay.classList.add('visible');
+  syncStoryFlow();
+}
+
+function hideStoryOverlay(){
+  storyFlow.storyVisible = false;
+  storyOverlay.classList.remove('visible');
+  syncStoryFlow();
+}
+
+function startExperience(){
+  if (storyFlow.introDone) return;
+  storyFlow.introDone = true;
+  storyFlow.phase = 'story';
+  introScreen.classList.add('hidden');
+  syncStoryFlow();
+}
+
+function toggleStoryOverlay(forceState){
+  if (typeof forceState === 'boolean') {
+    storyFlow.storyVisible = forceState;
+  } else {
+    storyFlow.storyVisible = !storyFlow.storyVisible;
+  }
+  storyOverlay.classList.toggle('visible', storyFlow.storyVisible);
+  syncStoryFlow();
+}
+
+function startCameraCinematicToPanel(panelId, duration = 2.4){
+  const entry = resolvePanelEntry(panelId);
+  if (!entry || !entry.mesh) return;
+
+  const startPos = camera.position.clone();
+  const startTarget = controls.target.clone();
+  const endTarget = entry.mesh.getWorldPosition(new THREE.Vector3());
+  const endPos = endTarget.clone().add(new THREE.Vector3(0, 7, 18));
+
+  cameraCinematic = {
+    startPos,
+    startTarget,
+    endPos,
+    endTarget,
+    duration,
+    elapsed: 0,
+    mode: 'panel',
+  };
+
+  controls.enabled = false;
+}
+
+function startCameraReturnToOrigin(duration = 2.2){
+  const startPos = camera.position.clone();
+  const startTarget = controls.target.clone();
+
+  cameraCinematic = {
+    startPos,
+    startTarget,
+    endPos: initialCameraPos.clone(),
+    endTarget: initialCameraTarget.clone(),
+    duration,
+    elapsed: 0,
+    mode: 'return',
+  };
+
+  controls.enabled = false;
+}
 
 // Make scene generation deterministic by replacing Math.random with a
 // seedable PRNG. Change `window.SCENE_SEED` to any number to vary layout.
@@ -111,47 +199,13 @@ function init(){
   document.addEventListener('webkitfullscreenchange', updateFullscreenCursor);
   updateFullscreenCursor();
 
-  const introScreen = document.getElementById('intro-screen');
-  const storyOverlay = document.getElementById('story-overlay');
-  let introDone = false;
-  let storyVisible = false;
-  let cinematicTriggered = false;
-
-  function startExperience(){
-    if(introDone) return;
-    introDone = true;
-    introScreen.classList.add('hidden');
-  }
-
-  function toggleStoryOverlay(forceState){
-    if (typeof forceState === 'boolean') {
-      storyVisible = forceState;
-    } else {
-      storyVisible = !storyVisible;
-    }
-    storyOverlay.classList.toggle('visible', storyVisible);
-  }
-
-  function startCameraCinematicToPanel(panelId, duration = 2.4){
-    const entry = resolvePanelEntry(panelId);
-    if (!entry || !entry.mesh) return;
-
-    const startPos = camera.position.clone();
-    const startTarget = controls.target.clone();
-    const endTarget = entry.mesh.getWorldPosition(new THREE.Vector3());
-    const endPos = endTarget.clone().add(new THREE.Vector3(0, 7, 18));
-
-    cameraCinematic = {
-      startPos,
-      startTarget,
-      endPos,
-      endTarget,
-      duration,
-      elapsed: 0,
-    };
-
-    controls.enabled = false;
-  }
+  introScreen = document.getElementById('intro-screen');
+  storyOverlay = document.getElementById('story-overlay');
+  storyImage = storyOverlay.querySelector('img');
+  defaultStorySrc = storyImage ? storyImage.src : '';
+  finalStoryUrl = 'https://cdn.phototourl.com/free/2026-08-29-8edc7eea-283e-4aed-abab-f6c05c4db1a2.png';
+  initialCameraPos = camera.position.clone();
+  initialCameraTarget = controls.target.clone();
 
   const toggleFullscreen = () => {
     const fsElement = document.fullscreenElement || document.webkitFullscreenElement;
@@ -175,29 +229,43 @@ function init(){
       return;
     }
 
-    if(event.code === 'Space' || event.key === 'ArrowRight' || event.key === 'Right'){
-      if (!introDone) {
+    if (event.code === 'Space' || event.key === 'ArrowRight' || event.key === 'Right') {
+      if (!storyFlow.introDone) {
         startExperience();
         return;
       }
 
-      if (cinematicTriggered) {
+      if (storyFlow.finalImageShown || cameraCinematic) {
         return;
       }
 
-      if (!storyVisible) {
-        toggleStoryOverlay(true);
+      if (storyFlow.phase === 'story') {
+        showStoryOverlay();
+        storyFlow.phase = 'story-visible';
+        syncStoryFlow();
         return;
       }
 
-      toggleStoryOverlay(false);
-      cinematicTriggered = true;
-      startCameraCinematicToPanel(73, 2.6);
+      if (storyFlow.phase === 'story-visible') {
+        hideStoryOverlay();
+        storyFlow.phase = 'panel-cinematic';
+        storyFlow.cinematicCompleted = false;
+        startCameraCinematicToPanel(73, 2.6);
+        syncStoryFlow();
+        return;
+      }
+
+      if (storyFlow.phase === 'panel-cinematic' && storyFlow.cinematicCompleted) {
+        startCameraReturnToOrigin(2.2);
+        storyFlow.phase = 'return-cinematic';
+        storyFlow.cinematicCompleted = false;
+        syncStoryFlow();
+      }
     }
   });
 
   renderer.domElement.addEventListener('click', () => {
-    if (!introDone) {
+    if (!storyFlow.introDone) {
       startExperience();
     }
   });
@@ -1145,8 +1213,18 @@ function animate(){
     controls.target.lerpVectors(cameraCinematic.startTarget, cameraCinematic.endTarget, eased);
 
     if (p >= 1) {
+      if (cameraCinematic.mode === 'panel') {
+        storyFlow.cinematicCompleted = true;
+        storyFlow.phase = 'panel-cinematic';
+      } else if (cameraCinematic.mode === 'return') {
+        storyFlow.finalImageShown = true;
+        storyFlow.phase = 'final-image';
+        showStoryOverlay(finalStoryUrl);
+      }
+
       cameraCinematic = null;
       controls.enabled = true;
+      syncStoryFlow();
     }
   }
 
