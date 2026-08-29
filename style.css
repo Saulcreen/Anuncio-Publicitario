@@ -13,6 +13,11 @@ html,body{
 }
 canvas{display:block;}
 
+body.fullscreen-active,
+html.fullscreen-active {
+  cursor: none;
+}
+
 #intro-screen{
   position:fixed;
   inset:0;
