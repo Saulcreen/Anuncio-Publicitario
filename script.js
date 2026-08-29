@@ -55,7 +55,7 @@ function init(){
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 0.9;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   document.body.appendChild(renderer.domElement);
@@ -95,7 +95,7 @@ function init(){
   // Post-processing (bloom for neon glow)
   composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.75, 0.85, 0.2);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.38, 0.7, 0.18);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
 
@@ -503,7 +503,7 @@ function addPanel(group, {x,y,z,ry,w,h,tex,glow}){
   // soft glow halo behind the panel so it reads brightly even from afar
   if(glow){
     const haloMat = new THREE.MeshBasicMaterial({
-      map: glowTexture(glow), transparent:true, opacity:0.3,
+      map: glowTexture(glow), transparent:true, opacity:0.12,
       blending: THREE.AdditiveBlending, depthWrite:false, toneMapped:false
     });
     halo = new THREE.Mesh(new THREE.PlaneGeometry(W*2,H*2), haloMat);
@@ -1154,11 +1154,17 @@ function animate(){
   updateTraffic(dt);
   updatePedestrians(dt);
 
-  // subtle neon flicker
+  // Gentle billboard flicker only for pure neon/color-block panels.
+  // Image-based panels stay fully stable so the artwork is easier to read.
   const t = clock.getElapsedTime();
-  neonMaterials.forEach((m,i)=>{
-    const flick = 0.92 + 0.08*Math.sin(t*6 + i*3) * (Math.random()<0.02?0.4:1);
-    m.color.setScalar(flick);
+  neonMaterials.forEach((m, i) => {
+    if (m.map && m.map.image && m.map.image.width) {
+      m.color.set(0xffffff);
+      return;
+    }
+
+    const flick = 1 + Math.sin(t * 1.3 + i * 1.4) * 0.01;
+    m.color.setScalar(Math.min(1.0, Math.max(0.9, flick)));
   });
 
   controls.update();
