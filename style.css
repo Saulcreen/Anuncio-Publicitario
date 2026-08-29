@@ -37,6 +37,36 @@ html.fullscreen-active {
   pointer-events:none;
 }
 
+#story-overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(3, 6, 12, 0.18);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  z-index:210;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#story-overlay.visible{
+  opacity:1;
+  visibility:visible;
+}
+
+#story-overlay img{
+  display:block;
+  width:min(82vw, 540px);
+  height:auto;
+  object-fit:contain;
+  border-radius:0;
+  box-shadow:none;
+}
+
 #intro-screen img{
   display:block;
   width:min(82vw, 540px);
