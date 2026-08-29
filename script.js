@@ -119,7 +119,26 @@ function init(){
     introScreen.classList.add('hidden');
   }
 
+  const toggleFullscreen = () => {
+    const fsElement = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fsElement) {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      return;
+    }
+
+    const target = document.documentElement;
+    if (target.requestFullscreen) target.requestFullscreen();
+    else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen();
+  };
+
   window.addEventListener('keydown', (event) => {
+    if (event.code === 'KeyF' || event.key === 'f' || event.key === 'F') {
+      event.preventDefault();
+      toggleFullscreen();
+      return;
+    }
+
     if(event.code === 'Space' || event.key === 'ArrowRight' || event.key === 'Right'){
       startExperience();
     }
