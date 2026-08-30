@@ -940,14 +940,14 @@ window.setPanelImage(41, "https://i.postimg.cc/wjz7x1d8/imagen-2026-08-29-183741
 window.setPanelImageFit(52, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI4xZ9kDUu4phler2R-EHHyBiZ2DAHvoI4D1OKziQPbkroHnnlLhtrL86L&s=10");
 window.setPanelImageFit(73, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6hnbadu0mW0qWu4oOX1LTI9Gjkhqt_DazMc7_YVwovg&s=10");
 window.setPanelImageContain(66, "https://crehana-blog.imgix.net/media/filer_public/90/83/9083027a-fc03-4e3f-8f55-636ffce6d36c/mcdonalds-happy-meal.jpg?auto=format&q=50");
-window.setPanelImageContain(86, "https://assets.isu.pub/document-structure/230531210617-44824fffdfc8b46639778de94c5c6588/v1/1d5cc48fd7631dd9141a916fa1ec6e56.jpeg");
-window.setPanelImageContain(23, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShVdzz2n--JjdE9cxOraAVnOkKrblwJXnmLI18G8J6GRjSDOrbAniynGqh&s=10");
-window.setPanelImageContain(70, "https://www.mercadonegro.pe/wp-content/uploads/2022/04/KV-Campana.jpeg");
-window.setPanelImageContain(40, "https://m.media-amazon.com/images/M/MV5BYmYwNGUwZWQtMTcyZC00ZjAxLThmZWEtMTY1OTIwZmI5YjBmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg");
-window.setPanelImageContain(60, "https://img.magnific.com/psd-gratis/venta-productos-viernes-negro-plantilla-diseno-publicaciones-redes-sociales_47987-24560.jpg");
-window.setPanelImageContain(2, "https://i.pinimg.com/736x/c7/06/26/c70626313b34333058e8465f3c632f22.jpg");
-window.setPanelImageContain(87, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpv4ck3IbOH11YB_Wn0WNr4gSukGEVGMDFsXSuBsw2qRDBzqU2rwSIy90&s=10");
-window.setPanelImageContain(94, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEr0gkR4cPhFGkMetZrED5e--P_mJMefB_WQHpimAy9w&s=10");
+window.setPanelImageContain(86, "https://i.postimg.cc/3Rh0whb0/imagen-2026-08-30-021301971.png");
+window.setPanelImageContain(23, "https://i.postimg.cc/vHK1VfNM/imagen-2026-08-30-021410497.png");
+window.setPanelImageContain(70, "https://i.postimg.cc/pTQ8Qrnz/imagen-2026-08-30-021107624.png");
+window.setPanelImageContain(40, "https://i.postimg.cc/T1q9PQ9R/imagen-2026-08-30-020805260.png");
+window.setPanelImageContain(60, "https://i.postimg.cc/T1wwy3Vs/imagen-2026-08-30-021458551.png");
+window.setPanelImageContain(2, "https://i.postimg.cc/9Fg9YvzG/imagen-2026-08-30-021201012.png");
+window.setPanelImageContain(87, "https://i.postimg.cc/jdB55KDR/imagen-2026-08-30-021610068.png");
+window.setPanelImageContain(94, "https://i.postimg.cc/Qt6NrrL8/imagen-2026-08-30-021701110.png");
 
 // Reubicar los paneles que estaban chocando en otras fachadas del mismo conjunto urbano.
 window.movePanelToBuilding(40, 1, 18, 12);
