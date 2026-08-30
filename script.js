@@ -927,6 +927,7 @@ window.setPanelImageFit(28, "https://i.postimg.cc/kMk2Zj16/imagen-2026-08-29-183
 window.setPanelImage(41, "https://i.postimg.cc/wjz7x1d8/imagen-2026-08-29-183741864.png");
 window.setPanelImageFit(52, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI4xZ9kDUu4phler2R-EHHyBiZ2DAHvoI4D1OKziQPbkroHnnlLhtrL86L&s=10");
 window.setPanelImageFit(73, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6hnbadu0mW0qWu4oOX1LTI9Gjkhqt_DazMc7_YVwovg&s=10");
+window.setPanelImageContain(66, "https://crehana-blog.imgix.net/media/filer_public/90/83/9083027a-fc03-4e3f-8f55-636ffce6d36c/mcdonalds-happy-meal.jpg?auto=format&q=50");
 
 // Reubicar los paneles que estaban chocando en otras fachadas del mismo conjunto urbano.
 window.movePanelToBuilding(40, 1, 18, 12);
@@ -1383,6 +1384,7 @@ function animate(){
           showStoryOverlay('https://cdn.phototourl.com/member/2026-08-29-4e2acc6f-d008-4dc9-8b22-e30aad3421ad.png');
         } else if (storyFlow.phase === 'panel-19-return') {
           storyFlow.phase = 'panel-19-done';
+          showStoryOverlay('https://cdn.phototourl.com/member/2026-08-30-45be1a29-e5fa-423a-9e5d-02446c8e340a.png');
         } else {
           storyFlow.finalImageShown = true;
           storyFlow.phase = 'final-image';
