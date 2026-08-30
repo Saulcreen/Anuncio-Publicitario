@@ -267,6 +267,15 @@ function init(){
   initialCameraPos = camera.position.clone();
   initialCameraTarget = controls.target.clone();
 
+  // Preload every narrative overlay image right away so they're already
+  // cached by the browser and appear instantly when their cinematic ends,
+  // instead of only starting to download at that moment.
+  [
+    finalStoryUrl,
+    'https://cdn.phototourl.com/member/2026-08-29-79f8de58-ebee-42aa-ba13-407e39ab6e53.png',
+    'https://cdn.phototourl.com/member/2026-08-29-4e2acc6f-d008-4dc9-8b22-e30aad3421ad.png',
+  ].forEach(url => { const preload = new Image(); preload.src = url; });
+
   const toggleFullscreen = () => {
     const fsElement = document.fullscreenElement || document.webkitFullscreenElement;
     if (fsElement) {
