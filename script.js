@@ -313,7 +313,7 @@ function init(){
       }
 
       if (storyFlow.phase === 'panel-41-done') {
-        startCameraReturnToOrigin(3.2);
+        startCameraReturnToOrigin(1.9);
         storyFlow.phase = 'panel-41-return';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -325,7 +325,7 @@ function init(){
       }
 
       if (storyFlow.phase === 'panel-28-done') {
-        startCameraReturnToOrigin(3.2);
+        startCameraReturnToOrigin(1.9);
         storyFlow.phase = 'panel-28-return';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -336,7 +336,7 @@ function init(){
         hideStoryOverlay();
         storyFlow.cinematicCompleted = false;
         storyFlow.phase = 'panel-28-cinematic';
-        startCameraCinematicToPanel(28, 3.8);
+        startCameraCinematicToPanel(28, 2.2);
         syncStoryFlow();
         return;
       }
@@ -346,7 +346,7 @@ function init(){
       }
 
       if (storyFlow.phase === 'panel-19-done') {
-        startCameraReturnToOrigin(3.2);
+        startCameraReturnToOrigin(1.9);
         storyFlow.phase = 'panel-19-return';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -357,7 +357,7 @@ function init(){
         hideStoryOverlay();
         storyFlow.cinematicCompleted = false;
         storyFlow.phase = 'panel-19-cinematic';
-        startCameraCinematicToPanel(19, 3.8);
+        startCameraCinematicToPanel(19, 2.2);
         syncStoryFlow();
         return;
       }
@@ -368,7 +368,7 @@ function init(){
         storyFlow.storyVisible = false;
         storyFlow.cinematicCompleted = false;
         storyFlow.phase = 'panel-41-cinematic';
-        startCameraCinematicToPanel(41, 3.8);
+        startCameraCinematicToPanel(41, 2.2);
         syncStoryFlow();
         return;
       }
@@ -388,13 +388,13 @@ function init(){
         hideStoryOverlay();
         storyFlow.phase = 'panel-cinematic';
         storyFlow.cinematicCompleted = false;
-        startCameraCinematicToPanel(73, 3.8);
+        startCameraCinematicToPanel(73, 2.2);
         syncStoryFlow();
         return;
       }
 
       if (storyFlow.phase === 'panel-cinematic' && storyFlow.cinematicCompleted) {
-        startCameraReturnToOrigin(3.2);
+        startCameraReturnToOrigin(1.9);
         storyFlow.phase = 'return-cinematic';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
