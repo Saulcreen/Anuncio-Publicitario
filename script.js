@@ -38,34 +38,42 @@ function syncStoryFlow(){
   window.storyFlow = storyFlow;
 }
 
+// Warms the browser's image cache ahead of time so that when
+// setStoryOverlayImage() is finally called, the image is already
+// downloaded/decoded and appears instantly instead of waiting on
+// the network right at reveal time.
+const preloadedStoryImages = new Set();
+function preloadStoryImage(url){
+  if (!url || preloadedStoryImages.has(url)) return;
+  preloadedStoryImages.add(url);
+  const img = new Image();
+  img.src = url;
+}
+
 function setStoryOverlayImage(url){
   if (!storyImage) return;
 
   const nextUrl = url || defaultStorySrc;
-  storyImage.style.transition = 'opacity 0.12s ease';
+  storyImage.style.transition = 'opacity 0.03s ease';
   storyImage.style.opacity = '0';
   storyImage.style.visibility = 'hidden';
   storyOverlay.classList.remove('visible');
 
-  const applyImage = () => {
-    storyImage.src = nextUrl;
-    const reveal = () => {
-      requestAnimationFrame(() => {
-        storyImage.style.visibility = 'visible';
-        storyImage.style.opacity = '1';
-        storyOverlay.classList.add('visible');
-      });
-    };
-
-    if (storyImage.complete && storyImage.naturalWidth > 0) {
-      reveal();
-      return;
-    }
-
-    storyImage.onload = reveal;
+  const reveal = () => {
+    storyImage.style.visibility = 'visible';
+    storyImage.style.opacity = '1';
+    storyOverlay.classList.add('visible');
   };
 
-  requestAnimationFrame(applyImage);
+  storyImage.src = nextUrl;
+  // Image already cached/preloaded → reveal immediately instead of
+  // waiting on a load event that will never fire again.
+  if (storyImage.complete && storyImage.naturalWidth > 0) {
+    reveal();
+    return;
+  }
+
+  storyImage.onload = reveal;
 }
 
 function showStoryOverlay(url = defaultStorySrc){
@@ -102,7 +110,7 @@ function toggleStoryOverlay(forceState){
   syncStoryFlow();
 }
 
-function startCameraCinematicToPanel(panelId, duration = 2.4){
+function startCameraCinematicToPanel(panelId, duration = 1.8){
   const entry = resolvePanelEntry(panelId);
   if (!entry || !entry.mesh) return;
 
@@ -156,7 +164,7 @@ function startCameraCinematicToPanel(panelId, duration = 2.4){
   controls.enabled = false;
 }
 
-function startCameraReturnToOrigin(duration = 2.2){
+function startCameraReturnToOrigin(duration = 1.6){
   const startPos = camera.position.clone();
   const startTarget = controls.target.clone();
 
@@ -313,7 +321,8 @@ function init(){
       }
 
       if (storyFlow.phase === 'panel-41-done') {
-        startCameraReturnToOrigin(1.9);
+        preloadStoryImage('https://cdn.phototourl.com/member/2026-08-29-79f8de58-ebee-42aa-ba13-407e39ab6e53.png');
+        startCameraReturnToOrigin(1.4);
         storyFlow.phase = 'panel-41-return';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -325,7 +334,8 @@ function init(){
       }
 
       if (storyFlow.phase === 'panel-28-done') {
-        startCameraReturnToOrigin(1.9);
+        preloadStoryImage('https://cdn.phototourl.com/member/2026-08-29-4e2acc6f-d008-4dc9-8b22-e30aad3421ad.png');
+        startCameraReturnToOrigin(1.4);
         storyFlow.phase = 'panel-28-return';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -336,7 +346,7 @@ function init(){
         hideStoryOverlay();
         storyFlow.cinematicCompleted = false;
         storyFlow.phase = 'panel-28-cinematic';
-        startCameraCinematicToPanel(28, 2.2);
+        startCameraCinematicToPanel(28, 1.6);
         syncStoryFlow();
         return;
       }
@@ -346,7 +356,8 @@ function init(){
       }
 
       if (storyFlow.phase === 'panel-19-done') {
-        startCameraReturnToOrigin(1.9);
+        preloadStoryImage('https://cdn.phototourl.com/member/2026-08-30-45be1a29-e5fa-423a-9e5d-02446c8e340a.png');
+        startCameraReturnToOrigin(1.4);
         storyFlow.phase = 'panel-19-return';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -357,7 +368,7 @@ function init(){
         hideStoryOverlay();
         storyFlow.cinematicCompleted = false;
         storyFlow.phase = 'panel-19-cinematic';
-        startCameraCinematicToPanel(19, 2.2);
+        startCameraCinematicToPanel(19, 1.6);
         syncStoryFlow();
         return;
       }
@@ -368,7 +379,7 @@ function init(){
         storyFlow.storyVisible = false;
         storyFlow.cinematicCompleted = false;
         storyFlow.phase = 'panel-41-cinematic';
-        startCameraCinematicToPanel(41, 2.2);
+        startCameraCinematicToPanel(41, 1.6);
         syncStoryFlow();
         return;
       }
@@ -388,13 +399,14 @@ function init(){
         hideStoryOverlay();
         storyFlow.phase = 'panel-cinematic';
         storyFlow.cinematicCompleted = false;
-        startCameraCinematicToPanel(73, 2.2);
+        startCameraCinematicToPanel(73, 1.6);
         syncStoryFlow();
         return;
       }
 
       if (storyFlow.phase === 'panel-cinematic' && storyFlow.cinematicCompleted) {
-        startCameraReturnToOrigin(1.9);
+        preloadStoryImage(finalStoryUrl);
+        startCameraReturnToOrigin(1.4);
         storyFlow.phase = 'return-cinematic';
         storyFlow.cinematicCompleted = false;
         syncStoryFlow();
@@ -928,6 +940,14 @@ window.setPanelImage(41, "https://i.postimg.cc/wjz7x1d8/imagen-2026-08-29-183741
 window.setPanelImageFit(52, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI4xZ9kDUu4phler2R-EHHyBiZ2DAHvoI4D1OKziQPbkroHnnlLhtrL86L&s=10");
 window.setPanelImageFit(73, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6hnbadu0mW0qWu4oOX1LTI9Gjkhqt_DazMc7_YVwovg&s=10");
 window.setPanelImageContain(66, "https://crehana-blog.imgix.net/media/filer_public/90/83/9083027a-fc03-4e3f-8f55-636ffce6d36c/mcdonalds-happy-meal.jpg?auto=format&q=50");
+window.setPanelImageContain(86, "https://assets.isu.pub/document-structure/230531210617-44824fffdfc8b46639778de94c5c6588/v1/1d5cc48fd7631dd9141a916fa1ec6e56.jpeg");
+window.setPanelImageContain(23, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcShVdzz2n--JjdE9cxOraAVnOkKrblwJXnmLI18G8J6GRjSDOrbAniynGqh&s=10");
+window.setPanelImageContain(70, "https://www.mercadonegro.pe/wp-content/uploads/2022/04/KV-Campana.jpeg");
+window.setPanelImageContain(40, "https://m.media-amazon.com/images/M/MV5BYmYwNGUwZWQtMTcyZC00ZjAxLThmZWEtMTY1OTIwZmI5YjBmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg");
+window.setPanelImageContain(60, "https://img.magnific.com/psd-gratis/venta-productos-viernes-negro-plantilla-diseno-publicaciones-redes-sociales_47987-24560.jpg");
+window.setPanelImageContain(2, "https://i.pinimg.com/736x/c7/06/26/c70626313b34333058e8465f3c632f22.jpg");
+window.setPanelImageContain(87, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSpv4ck3IbOH11YB_Wn0WNr4gSukGEVGMDFsXSuBsw2qRDBzqU2rwSIy90&s=10");
+window.setPanelImageContain(94, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEr0gkR4cPhFGkMetZrED5e--P_mJMefB_WQHpimAy9w&s=10");
 
 // Reubicar los paneles que estaban chocando en otras fachadas del mismo conjunto urbano.
 window.movePanelToBuilding(40, 1, 18, 12);
