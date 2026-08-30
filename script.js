@@ -915,7 +915,7 @@ window.clearAllPanelImages = function(){
 window.clearAllPanelImages();
 window.setPanelImage(19, "https://i.postimg.cc/x8DSbLfh/imagen-2026-08-29-001734402.png");
 window.setPanelImageFit(28, "https://cdn.phototourl.com/free/2026-08-28-60444415-479e-446e-a912-a73b2bdbbc53.png");
-window.setPanelImage(41, "https://cdn.phototourl.com/free/2026-08-29-bb369b8e-316e-49d4-9211-44ea5f3c36ea.png");
+window.setPanelImage(41, "https://i.postimg.cc/wjz7x1d8/imagen-2026-08-29-183741864.png");
 window.setPanelImageFit(52, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTI4xZ9kDUu4phler2R-EHHyBiZ2DAHvoI4D1OKziQPbkroHnnlLhtrL86L&s=10");
 window.setPanelImageFit(73, "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6hnbadu0mW0qWu4oOX1LTI9Gjkhqt_DazMc7_YVwovg&s=10");
 
